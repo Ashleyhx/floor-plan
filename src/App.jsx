@@ -1,17 +1,16 @@
-import React, { useState, useCallback } from 'react';
-import Cropper from 'react-easy-crop';
-import './App.css';
+import React, {useState} from 'react';
+import '@mantine/core/styles.css';
+import {AppShell, Container, FileButton, Flex, ScrollArea, Select, Stack, TextInput, Title} from "@mantine/core";
+import ReactPanZoom from "react-image-pan-zoom-rotate";
+import {FileIcon} from "@radix-ui/react-icons";
+
 
 function App() {
     const [images, setImages] = useState([]);
     const [selectedImageIndex, setSelectedImageIndex] = useState(null);
-    const [crop, setCrop] = useState({ x: 0, y: 0 });
-    const [rotation, setRotation] = useState(0);
-    const [zoom, setZoom] = useState(1);
 
-    const handleFileChange = (event) => {
-        const files = Array.from(event.target.files);
-        const newImages = files.map(file => {
+    const handleFileChange = (files) => {
+        const newImages = Array.from(files).map(file => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
             return new Promise((resolve) => {
@@ -27,126 +26,98 @@ function App() {
         });
     };
 
-    const selectImage = index => {
-        setSelectedImageIndex(index);
-        setCrop({ x: 0, y: 0 });
-        setZoom(1);
-        setRotation(0);
-    };
-
     return (
-        <div>
-            {imageSrc ? (
-                <React.Fragment>
-                    <div className={classes.cropContainer}>
-                        <Cropper
-                            image={imageSrc}
-                            crop={crop}
-                            rotation={rotation}
-                            zoom={zoom}
-                            aspect={4 / 3}
-                            onCropChange={setCrop}
-                            onRotationChange={setRotation}
-                            onCropComplete={onCropComplete}
-                            onZoomChange={setZoom}
-                        />
-                    </div>
-                    <div className={classes.controls}>
-                        <div className={classes.sliderContainer}>
-                            <Typography
-                                variant="overline"
-                                classes={{root: classes.sliderLabel}}
-                            >
-                                Zoom
-                            </Typography>
-                            <Slider
-                                value={zoom}
-                                min={1}
-                                max={3}
-                                step={0.1}
-                                aria-labelledby="Zoom"
-                                classes={{root: classes.slider}}
-                                onChange={(e, zoom) => setZoom(zoom)}
-                            />
-                        </div>
-                        <div className={classes.sliderContainer}>
-                            <Typography
-                                variant="overline"
-                                classes={{root: classes.sliderLabel}}
-                            >
-                                Rotation
-                            </Typography>
-                            <Slider
-                                value={rotation}
-                                min={0}
-                                max={360}
-                                step={1}
-                                aria-labelledby="Rotation"
-                                classes={{root: classes.slider}}
-                                onChange={(e, rotation) => setRotation(rotation)}
-                            />
-                        </div>
-                        <Button
-                            onClick={showCroppedImage}
-                            variant="contained"
-                            color="primary"
-                            classes={{root: classes.cropButton}}
-                        >
-                            Show Result
-                        </Button>
-                    </div>
-                    <ImgDialog img={croppedImage} onClose={onClose}/>
-                </React.Fragment>
-            ) : (
-                <input type="file" onChange={onFileChange} accept="image/*"/>
-            )}
-        </div>
+        <AppShell
+            header={{height: 50}}
+            navbar={{
+                width: 300,
+                breakpoint: 'sm',
+            }}
+            padding="md"
+        >
+            <AppShell.Header>
+                <Title order={2} style={{margin: 10}}>Adding Floor Plans</Title>
+            </AppShell.Header>
 
+            <AppShell.Navbar p="md">
+                <ScrollArea scrollbars={"y"}>
+                    <Stack gap="xl">
+                        {images.map((src, index) => (
+                            <img key={index} src={src} alt={`floor-plan-${index}`}
+                                 style={{width: "100%"}}
+                                 onClick={() => setSelectedImageIndex(index)}
+                            />
+                        ))}
+                        <FileButton onChange={handleFileChange} accept="image/png,image/jpeg" multiple={true}>
+                            {(props) => <Flex align="center" justify="center" style={{
+                                width: "100%", height: 120,
+                                borderStyle: "dashed", borderWidth: 2, borderColor: "black", borderRadius: 5,
+                                cursor: "pointer"
+                            }} onClick={props.onClick}>
+                                <FileIcon/>
+                            </Flex>}
+                        </FileButton>
+                    </Stack>
+                </ScrollArea>
 
-    <div className="App">
-        <div className="floor-plan-modify">
-            <div className="sidebar">
-                <input type="file" multiple accept="image/*" onChange={handleFileChange}/>
-                {images.map((src, index) => (
-                    <img key={index} src={src} alt={`floor-plan-${index}`}
-                         className={`thumbnail ${index === selectedImageIndex ? 'selected' : ''}`}
-                         onClick={() => selectImage(index)}
-                    />
-                ))}
-            </div>
-            <div className="main">
-                <div className="image-plate">
+            </AppShell.Navbar>
+
+            <AppShell.Main>
+                <Title order={5}>Adjust Floor Plans</Title>
+                <div
+                    style={{
+                        position: "relative",
+                        width: 900,
+                        height: 700,
+                        overflow: "hidden",
+                        background: "grey"
+                    }}>
                     {selectedImageIndex !== null && (
-                        <Cropper
+                        <ReactPanZoom
+                            key={selectedImageIndex}
                             image={images[selectedImageIndex]}
-                            crop={crop}
-                            rotation={rotation}
-                            zoom={zoom}
-                            aspect={4 / 3}
-                            onCropChange={setCrop}
-                            onRotationChange={setRotation}
-                            onZoomChange={setZoom}
                         />
                     )}
                 </div>
-                <div className="properties">
-                    <div>
-                        <label>Zoom</label>
-                        <input type="range" value={zoom} min={1} max={3} step={0.1}
-                               onChange={event => setZoom(event.target.value)}/>
-                    </div>
-                    <div>
-                        <label>Rotation</label>
-                        <input type="range" value={rotation} min={0} max={360} step={1}
-                               onChange={event => setRotation(event.target.value)}/>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-)
-    ;
+            </AppShell.Main>
+            <AppShell.Aside>
+                <Container size={"xl"}>
+                    <Stack>
+                        <TextInput
+                            label="Floor Name"
+                            type="text"
+                            placeholder="enter the Floor Name here"
+                        />
+                        <TextInput
+                            label="Interior Size"
+                            type="text"
+                            placeholder="enter the Interior Size here"
+                        />
+                        <TextInput
+                            label="Exterior Size"
+                            type="text"
+                            placeholder="enter the Exterior Size here"
+                        />
+                        <TextInput
+                            label="Exterior Type"
+                            type="text"
+                            placeholder="enter the Exterior Type here"
+                        />
+                        <Select
+                            label="Facing Directions:"
+                            placeholder="Select"
+                            data={['North', 'South', 'East', 'West']}
+                        />
+                        <Select
+                            label="Floor Type:"
+                            placeholder="Select"
+                            data={['Studio', 'One Bed One Bath', 'Two Bed One Bath', 'Three Bed Two Bath']}
+                        />
+                    </Stack>
+                </Container>
+            </AppShell.Aside>
+        </AppShell>
+    );
 }
 
 export default App;
