@@ -50,7 +50,7 @@ function App() {
                         ))}
                         <FileButton onChange={handleFileChange} accept="image/png,image/jpeg" multiple={true}>
                             {(props) => <Flex align="center" justify="center" style={{
-                                width: "100%", height: 120,
+                                width: "100%", height: 150,
                                 borderStyle: "dashed", borderWidth: 2, borderColor: "black", borderRadius: 5,
                                 cursor: "pointer"
                             }} onClick={props.onClick}>
