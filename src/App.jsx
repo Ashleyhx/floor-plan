@@ -64,21 +64,23 @@ function App() {
 
             <AppShell.Main>
                 <Title order={5}>Adjust Floor Plans</Title>
-                <div
-                    style={{
-                        position: "relative",
-                        width: 900,
-                        height: 700,
-                        overflow: "hidden",
-                        background: "grey"
-                    }}>
-                    {selectedImageIndex !== null && (
-                        <ReactPanZoom
-                            key={selectedImageIndex}
-                            image={images[selectedImageIndex]}
-                        />
-                    )}
-                </div>
+                {
+                    images.map((src, index) => (
+                        <div
+                            style={{
+                                position: "relative",
+                                width: "70%",
+                                height: 700,
+                                overflow: "hidden",
+                                background: "grey",
+                                display: index === selectedImageIndex ? "block" : "none"
+                            }}>
+                            <ReactPanZoom
+                                key={index}
+                                image={src}
+                            />
+                        </div>))
+                }
             </AppShell.Main>
             <AppShell.Aside>
                 <Container size={"xl"}>
